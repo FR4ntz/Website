@@ -1,0 +1,398 @@
+/* =========================================
+   1. SETUP & VARIABLES
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette */
+    --primary-color: #003366;       /* UPJ Blue */
+    --primary-gradient: linear-gradient(135deg, #003366 0%, #00509e 100%);
+    --accent-color: #0d6efd;        /* Bright Blue */
+    --accent-hover: #0b5ed7;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    
+    /* Backgrounds */
+    --bg-body: #f4f6f9;             /* Light Grayish Blue (Modern Dashboard Feel) */
+    --bg-card: #ffffff;
+    
+    /* Typography */
+    --text-main: #2c3e50;
+    --text-muted: #6c757d;
+    
+    /* Effects */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-pill: 50px;
+}
+
+/* =========================================
+   2. GLOBAL LAYOUT (FIX FOOTER)
+   ========================================= */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-color: var(--bg-body);
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column; /* Kunci Footer di Bawah */
+    min-height: 100vh;
+    font-size: 0.95rem;
+}
+
+/* Container utama (div.container di file PHP) harus expand */
+body > .container {
+    flex: 1 0 auto; /* Memaksa konten mengisi ruang kosong */
+    width: 100%;    /* Pastikan lebar penuh */
+}
+
+a { text-decoration: none; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+
+/* =========================================
+   3. HEADER (GLASSMORPHISM)
+   ========================================= */
+header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    box-shadow: 0 4px 15px rgba(0, 51, 102, 0.2);
+    /* Efek Kaca Transparan (Opsional) */
+    background: rgba(0, 51, 102, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+header h5 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   4. SIDEBAR & NAVIGATION
+   ========================================= */
+.nav-link {
+    color: #5a6a7e;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link i {
+    font-size: 1.25rem;
+    margin-right: 15px;
+    width: 24px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+/* Hover State */
+.nav-link:hover {
+    background-color: white;
+    color: var(--accent-color);
+    box-shadow: var(--shadow-soft);
+    transform: translateX(5px);
+}
+
+.nav-link:hover i {
+    transform: scale(1.1);
+}
+
+/* Active State */
+.nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
+    font-weight: 600;
+}
+
+.nav-link.active i { color: white; }
+
+/* Separator Line */
+hr { border-top: 1px solid #dbe2e8; opacity: 1; }
+
+/* =========================================
+   5. CARDS & WIDGETS
+   ========================================= */
+.card {
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px); /* Efek naik saat hover */
+    box-shadow: var(--shadow-hover);
+}
+
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 700;
+    padding: 18px 24px;
+    font-size: 1rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+}
+
+.card-header i { margin-right: 10px; font-size: 1.1rem; }
+
+/* Override Warna Header untuk Widget/Notif */
+.card-header.bg-primary, 
+.card-header.bg-success, 
+.card-header.bg-danger,
+.card-header.bg-warning,
+.card-header.bg-info {
+    color: white !important;
+    border: none;
+}
+.card-header.bg-warning { color: #212529 !important; }
+
+.card-body { padding: 24px; }
+
+/* =========================================
+   6. TABLES & BADGES
+   ========================================= */
+.table { margin-bottom: 0; }
+
+.table thead th {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px;
+    color: #333;
+}
+
+.badge {
+    padding: 0.6em 1em;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   7. CHAT & AI INTERFACE
+   ========================================= */
+.chat-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+}
+
+.msg-container {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+/* AI Bubble (Left) */
+.msg-ai {
+    background: #ffffff;
+    color: #444;
+    padding: 14px 20px;
+    border-radius: 20px 20px 20px 4px; /* Ujung kiri bawah lancip */
+    align-self: flex-start;
+    max-width: 85%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #f0f0f0;
+    position: relative;
+    line-height: 1.5;
+}
+
+/* User Bubble (Right) */
+.msg-user {
+    background: linear-gradient(135deg, var(--accent-color), #0a58ca);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 20px 20px 4px 20px; /* Ujung kanan bawah lancip */
+    align-self: flex-end;
+    max-width: 85%;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.25);
+    line-height: 1.5;
+}
+
+/* Input Area Chat */
+.card-footer {
+    background: white;
+    border-top: 1px solid #eee;
+    padding: 15px;
+}
+
+.card-footer input {
+    border-radius: 50px;
+    padding: 10px 20px;
+    border: 1px solid #ced4da;
+    background: #f8f9fa;
+}
+
+.card-footer input:focus {
+    background: white;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.card-footer button {
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.card-footer button:hover { transform: scale(1.1); }
+
+/* =========================================
+   8. FOOTER (STICKY BOTTOM)
+   ========================================= */
+footer {
+    flex-shrink: 0; /* Mencegah footer menyusut */
+    background: #002855; /* Biru Tua Elegant */
+    color: rgba(255, 255, 255, 0.8);
+    padding: 25px 0;
+    margin-top: auto; /* KUNCI: Mendorong footer ke paling bawah */
+    font-size: 0.9rem;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+}
+
+footer a {
+    color: #fff;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: var(--accent-color);
+}
+
+/* Efek Hover untuk Link Detail */
+.link-hover {
+    transition: all 0.3s ease;
+}
+.link-hover:hover {
+    padding-right: 5px; /* Memberikan efek gerak sedikit ke kanan */
+    color: #0056b3 !important;
+}
+
+/* Membuat kartu sedikit naik saat di hover */
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-3px);
+}
+
+
+/* =========================================
+   9. RESPONSIVE LAYOUT (TABLET & MOBILE)
+   ========================================= */
+
+/* KHUSUS TABLET & IPAD AIR LANDSCAPE (Antara 768px sampai 1199px) */
+/* Kita naikkan batas max-width agar mencakup iPad Air (1180px) */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    
+    /* 1. KONTROL CONTAINER ROW */
+    .container > .row {
+        display: flex;
+        flex-wrap: wrap; /* Izinkan elemen turun ke bawah */
+        justify-content: space-between;
+    }
+
+    /* 2. POSISI MENU (KIRI ATAS) */
+    /* Menggunakan width 30% agar proporsional di layar lebar */
+    .container > .row > .col-lg-3:nth-child(1) {
+        width: 30% !important; 
+        flex: 0 0 auto;
+        order: 1; 
+        margin-bottom: 0;
+    }
+
+    /* 3. POSISI ARTIKEL (KANAN ATAS) */
+    /* Menggunakan width 68% untuk sisa ruang */
+    .container > .row > .col-lg-6:nth-child(2) {
+        width: 68% !important; 
+        flex: 0 0 auto;
+        order: 2; 
+        margin-bottom: 0;
+    }
+
+    /* 4. POSISI ASIDE / WIDGET (BAWAH FULL WIDTH) */
+    .container > .row > .col-lg-3:nth-child(3) {
+        width: 100% !important; 
+        flex: 0 0 auto;
+        order: 3; /* Pindah ke bawah */
+        margin-top: 30px; 
+        margin-bottom: 20px;
+        
+        /* Grid 3 Kolom untuk Widget */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 20px; 
+    }
+
+    /* 5. PERBAIKAN KARTU WIDGET */
+    .container > .row > .col-lg-3:nth-child(3) .card {
+        height: 100%; 
+        margin-bottom: 0 !important; 
+    }
+    
+    .container > .row > .col-lg-3:nth-child(3) .list-group-item {
+        padding: 8px 15px; 
+    }
+}
+
+/* KHUSUS HP (Di bawah 768px) */
+@media (max-width: 767.98px) {
+    header { padding: 10px 0; }
+    header h5 { font-size: 1.1rem; }
+    
+    /* Stack semua vertikal (Tumpuk ke bawah) */
+    .col-lg-3, .col-lg-6 { 
+        width: 100% !important;
+        margin-bottom: 20px; 
+    }
+    
+    .msg-ai, .msg-user { max-width: 90%; font-size: 0.9rem; }
+    .nav-link:hover { transform: none; }
+    
+    /* Widget di HP tetap tumpuk ke bawah */
+    .container > .row > .col-lg-3:nth-child(3) {
+        display: block; 
+    }
+}
