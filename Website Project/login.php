@@ -58,7 +58,7 @@ if (isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SITA UPJ</title>
+    <title>Login - SITA Perguruan Tinggi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -66,7 +66,7 @@ if (isset($_POST['login'])) {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #003366 0%, #0056b3 100%); /* Biru UPJ */
+            background: linear-gradient(135deg, #003366 0%, #0056b3 100%); /* Biru */
             height: 100vh;
             display: flex;
             align-items: center;
@@ -167,7 +167,7 @@ if (isset($_POST['login'])) {
             </div>
             
             <div class="text-center mb-4">
-                <h4 class="fw-bold m-0" style="color: #003366;">SITA UPJ</h4>
+                <h4 class="fw-bold m-0" style="color: #003366;">SITA Perguruan Tinggi</h4>
                 <p class="text-muted small">Portal Sistem Informasi Tugas Akhir</p>
             </div>
 
@@ -203,7 +203,7 @@ if (isset($_POST['login'])) {
             </form>
 
             <div class="footer-text">
-                &copy; 2025 Universitas Pembangunan Jaya<br>
+                &copy; 2025 Universitas Perguruan Tinggi<br>
                 Prodi Sistem Informasi
             </div>
         </div>

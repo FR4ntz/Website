@@ -128,7 +128,7 @@ $periode = mysqli_fetch_assoc($q_periode);
                                             </span>
                                         </div>
 
-                                        <p class="card-text text-muted small flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                        <p class="card-text text-muted small flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
                                             <?= htmlspecialchars($row['deskripsi']) ?>
                                         </p>
                                         
@@ -195,7 +195,7 @@ $periode = mysqli_fetch_assoc($q_periode);
 
     <footer class="text-center py-4 bg-dark text-white mt-auto">
         <div class="container">
-            <h6 class="fw-bold mb-2"><?= $web['nama_web'] ?> - Universitas Pembangunan Jaya</h6>
+            <h6 class="fw-bold mb-2"><?= $web['nama_web'] ?> - Universitas Perguruan Tinggi</h6>
             <small class="d-block text-white-50"><?= $web['alamat'] ?></small>
             
             <div class="social-links mt-3">

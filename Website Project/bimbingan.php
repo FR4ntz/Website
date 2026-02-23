@@ -1,183 +1,190 @@
 <?php
-// Pastikan folder upload ada
+// --- 1. SETTING FOLDER UPLOAD ---
 $uploadDir = 'uploads/bukti_bimbingan/';
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
-// 1. AMBIL DATA PROPOSAL & PEMBIMBING
-// Tabel: Proposal (P), Dosen (D)
-// Kolom: status_pengajuan, NIDN_Pembimbing, Nama, NIM
-$q_cek = "SELECT p.status_pengajuan, p.NIDN_Pembimbing, d.Nama as nama_dosen, p.idProposal 
+// --- 2. AMBIL DATA PROPOSAL & STATUS SIAP SIDANG ---
+$q_cek = "SELECT p.status_pengajuan, p.NIDN_Pembimbing, d.Nama as nama_dosen, p.idProposal, p.siap_sidang
           FROM Proposal p 
           LEFT JOIN Dosen d ON p.NIDN_Pembimbing = d.NIDN 
           WHERE p.NIM = '$nim'";
 $cek_prop = mysqli_query($conn, $q_cek);
 $data_prop = mysqli_fetch_assoc($cek_prop);
 
-$status_proposal = $data_prop['status_pengajuan'] ?? 'Belum Mengajukan';
-$nidn_pembimbing = $data_prop['NIDN_Pembimbing'] ?? '';
-$nama_pembimbing = $data_prop['nama_dosen'] ?? 'Belum Ditentukan';
-$id_proposal_aktif = $data_prop['idProposal'] ?? ''; // Penting untuk insert bimbingan
+$status_proposal    = $data_prop['status_pengajuan'] ?? 'Belum Mengajukan';
+$nidn_pembimbing    = $data_prop['NIDN_Pembimbing'] ?? '';
+$nama_pembimbing    = $data_prop['nama_dosen'] ?? 'Belum Ditentukan';
+$id_proposal_aktif  = $data_prop['idProposal'] ?? '';
+$status_siap_sidang = $data_prop['siap_sidang'] ?? 'Belum';
 
-// Validasi: Harus disetujui DAN sudah ada pembimbingnya
+// --- 3. HITUNG JUMLAH BIMBINGAN ACC ---
+$q_count = "SELECT COUNT(*) as total_acc FROM Bimbingan 
+            WHERE NIM = '$nim' AND (Status = 'ACC' OR Status = 'Disetujui')";
+$res_count = mysqli_query($conn, $q_count);
+$data_acc = mysqli_fetch_assoc($res_count);
+$jumlah_acc = $data_acc['total_acc'] ?? 0;
+
+// Logika Validasi
 $is_valid = ($status_proposal == 'Disetujui' && !empty($nidn_pembimbing));
+$boleh_sidang = ($jumlah_acc >= 8 && $status_siap_sidang == 'Siap');
 
-
-// 2. LOGIKA SIMPAN LOGBOOK
+// --- 4. LOGIKA SIMPAN LOGBOOK ---
 if (isset($_POST['tambah_log']) && $is_valid) {
-    // Ambil NIDN dari input hidden
     $nidn   = $_POST['nidn']; 
     $topik  = mysqli_real_escape_string($conn, $_POST['topik']);
-    $tgl    = date('Y-m-d H:i:s'); // Format DATETIME
+    $tgl    = date('Y-m-d H:i:s');
     
-    // Proses Upload Foto
     $fotoName = null;
     if (isset($_FILES['bukti_foto']) && $_FILES['bukti_foto']['error'] === UPLOAD_ERR_OK) {
-        $fileTmpPath = $_FILES['bukti_foto']['tmp_name'];
-        $fileName    = $_FILES['bukti_foto']['name'];
-        $fileType    = $_FILES['bukti_foto']['type'];
-        
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (in_array($fileType, $allowedTypes)) {
-            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $newFileName = $nim . '_' . time() . '.' . $fileExtension;
-            $dest_path = $uploadDir . $newFileName;
-            
-            if(move_uploaded_file($fileTmpPath, $dest_path)) {
-                $fotoName = $newFileName;
-            }
-        } else {
-            echo "<script>alert('Format file tidak valid! Hanya JPG, JPEG, PNG.');</script>";
+        $fileExtension = strtolower(pathinfo($_FILES['bukti_foto']['name'], PATHINFO_EXTENSION));
+        $newFileName = $nim . '_' . time() . '.' . $fileExtension;
+        if(move_uploaded_file($_FILES['bukti_foto']['tmp_name'], $uploadDir . $newFileName)) {
+            $fotoName = $newFileName;
         }
     }
 
-    // GENERATE ID BIMBINGAN (BIMB-TIMESTAMP)
-    $id_bimb = "BIMB-" . time();
-
-    // Query Insert (Sesuaikan Nama Kolom Baru)
-    // Kolom: idBimbingan, NIM, NIDN, idProposal, Tanggal, Topik, Bukti_Foto, Status
+    $id_bimb = "BIMB" . date('ym') . mt_rand(1000, 9999);
     $query = "INSERT INTO Bimbingan (idBimbingan, NIM, NIDN, idProposal, Tanggal, Topik, Bukti_Foto, Status) 
               VALUES ('$id_bimb', '$nim', '$nidn', '$id_proposal_aktif', '$tgl', '$topik', '$fotoName', 'Menunggu')";
     
     if(mysqli_query($conn, $query)){
         echo "<script>alert('Logbook berhasil disimpan!'); window.location='dashboard_mhs.php?page=bimbingan';</script>";
-    } else {
-        echo "<script>alert('Gagal menyimpan: ".mysqli_error($conn)."');</script>";
+        exit; 
     }
 }
 ?>
 
-<?php if ($is_valid): ?>
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <i class="bi bi-pencil-fill"></i> Isi Logbook Baru
-        </div>
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
-                
-                <div class="mb-3">
-                    <label class="fw-bold small mb-1">Dosen Pembimbing</label>
-                    <input type="text" class="form-control bg-light" value="<?= $nama_pembimbing ?>" readonly>
-                    <input type="hidden" name="nidn" value="<?= $nidn_pembimbing ?>">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="fw-bold small mb-1">Topik Bimbingan</label>
-                    <textarea name="topik" class="form-control" rows="3" required placeholder="Misal: Revisi Bab 1 tentang Latar Belakang..."></textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label class="fw-bold small mb-1">Bukti Foto Bimbingan (Opsional)</label>
-                    <input type="file" name="bukti_foto" class="form-control" accept="image/jpeg, image/png, image/jpg">
-                    <div class="form-text text-muted">Format: JPG, PNG. Maks 2MB.</div>
-                </div>
-
-                <button type="submit" name="tambah_log" class="btn btn-primary w-100">
-                    <i class="bi bi-save"></i> Simpan Logbook
-                </button>
-            </form>
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body">
+        <div class="row align-items-center text-center text-md-start">
+            <div class="col-md-8">
+                <h5 class="fw-bold text-primary mb-1"><i class="bi bi-mortarboard-fill me-2"></i>Status Kelayakan Sidang</h5>
+                <p class="small text-muted mb-0">
+                    Syarat: 
+                    <span class="badge <?= $jumlah_acc >= 8 ? 'bg-success' : 'bg-secondary' ?> p-2 px-3"><?= $jumlah_acc ?>/8 ACC</span> 
+                    <span class="ms-1">|</span>
+                    <span class="badge <?= $status_siap_sidang == 'Siap' ? 'bg-success' : 'bg-secondary' ?> p-2 px-3">Izin Dosen: <?= $status_siap_sidang ?></span>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <?php if($boleh_sidang): ?>
+                    <a href="?page=daftar_sidang" class="btn btn-success btn-lg shadow-sm w-100">
+                        <i class="bi bi-check-all me-1"></i> Daftar Sidang Akhir
+                    </a>
+                <?php else: ?>
+                    <button class="btn btn-secondary btn-lg shadow-sm w-100" disabled style="background-color: #adb5bd; border:none;">
+                        <i class="bi bi-lock-fill me-1"></i> Belum Memenuhi Syarat
+                    </button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
+</div>
 
-<?php else: ?>
-    <div class="alert alert-warning border-warning shadow-sm d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-1 me-3 text-warning"></i>
-        <div>
-            <h5 class="alert-heading fw-bold">Akses Dibatasi</h5>
-            <p class="mb-0">
-                Anda belum dapat mengisi logbook bimbingan. <br>
-                Status Proposal: <strong><?= strtoupper($status_proposal) ?></strong>. <br>
-                Pastikan proposal sudah <strong>Disetujui</strong> dan <strong>Dosen Pembimbing</strong> telah ditentukan oleh Koordinator.
-            </p>
-        </div>
-    </div>
-<?php endif; ?>
-
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-white fw-bold border-bottom">
-        <i class="bi bi-clock-history"></i> Riwayat Bimbingan Anda
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0 small align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-3">No</th>
-                        <th>Tanggal</th>
-                        <th>Topik</th>
-                        <th>Bukti</th> <th>Catatan</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Ambil Data Bimbingan (Join Dosen)
-                    // Kolom: NIDN (bukan nidn_pembimbing), Tanggal (PascalCase), Topik, Bukti_Foto
-                    $log = mysqli_query($conn, "SELECT b.*, d.Nama as nama_dosen 
-                                                FROM Bimbingan b 
-                                                JOIN Dosen d ON b.NIDN = d.NIDN 
-                                                WHERE b.NIM='$nim' 
-                                                ORDER BY b.Tanggal DESC");
-                    $no = 1;
-                    if ($log && mysqli_num_rows($log) > 0) {
-                        while($row = mysqli_fetch_array($log)):
-                    ?>
-                    <tr>
-                        <td class="ps-3"><?= $no++ ?></td>
-                        <td><?= date('d M Y', strtotime($row['Tanggal'])) ?></td>
-                        <td><?= htmlspecialchars($row['Topik']) ?></td>
-                        
-                        <td>
-                            <?php if(!empty($row['Bukti_Foto'])): ?>
-                                <a href="uploads/bukti_bimbingan/<?= $row['Bukti_Foto'] ?>" target="_blank" class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-image"></i> Lihat
-                                </a>
-                            <?php else: ?>
-                                <span class="text-muted">-</span>
-                            <?php endif; ?>
-                        </td>
-
-                        <td class="text-danger fst-italic"><?= $row['Catatan_Dosen'] ?? '-' ?></td>
-                        <td>
-                            <?php if($row['Status'] == 'ACC' || $row['Status'] == 'Disetujui'): ?>
-                                <span class="badge bg-success">ACC</span>
-                            <?php elseif($row['Status'] == 'Revisi'): ?>
-                                <span class="badge bg-danger">Revisi</span>
-                            <?php else: ?>
-                                <span class="badge bg-secondary">Menunggu</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endwhile; 
-                    } ?>
-                </tbody>
-            </table>
-            <?php if(!$log || mysqli_num_rows($log) == 0): ?>
-                <div class="p-4 text-center text-muted">
-                    <i class="bi bi-inbox fs-4 d-block mb-2"></i> Belum ada data bimbingan.
+<div class="row">
+    <div class="col-12 mb-4">
+        <?php if ($is_valid): ?>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold py-3">
+                    <i class="bi bi-pencil-square me-2"></i>Isi Logbook Baru
                 </div>
-            <?php endif; ?>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="small fw-bold mb-2">Dosen Pembimbing</label>
+                                <input type="text" class="form-control bg-light py-2" value="<?= $nama_pembimbing ?>" readonly>
+                                <input type="hidden" name="nidn" value="<?= $nidn_pembimbing ?>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small fw-bold mb-2">Bukti Foto (Opsional)</label>
+                                <input type="file" name="bukti_foto" class="form-control py-2" accept="image/*">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="small fw-bold mb-2">Topik Bimbingan</label>
+                                <textarea name="topik" class="form-control" rows="3" required placeholder="Apa yang Anda konsultasikan hari ini?"></textarea>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" name="tambah_log" class="btn btn-primary px-5 py-2 shadow-sm">
+                                <i class="bi bi-send me-2"></i>Kirim Logbook
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-warning shadow-sm py-4">
+                <h5 class="fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Akses Terbatas</h5>
+                Status Proposal: <b><?= $status_proposal ?></b>. Anda baru bisa mengisi logbook setelah proposal disetujui.
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-bold border-bottom py-3">
+                <i class="bi bi-clock-history me-2 text-primary"></i>Riwayat Bimbingan
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="small text-uppercase">
+                            <th class="ps-4" width="15%">Tanggal</th>
+                            <th width="50%">Topik & Catatan Dosen</th>
+                            <th width="15%" class="text-center">Bukti</th>
+                            <th width="20%" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $log = mysqli_query($conn, "SELECT * FROM Bimbingan WHERE NIM='$nim' ORDER BY Tanggal DESC");
+                        if(mysqli_num_rows($log) > 0):
+                            while($row = mysqli_fetch_array($log)):
+                                $color = ($row['Status'] == 'ACC' || $row['Status'] == 'Disetujui') ? 'success' : ($row['Status'] == 'Revisi' ? 'danger' : 'warning text-dark');
+                        ?>
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted"><?= date('d M Y', strtotime($row['Tanggal'])) ?></td>
+                            <td>
+                                <div class="fw-bold text-dark mb-1"><?= htmlspecialchars($row['Topik']) ?></div>
+                                <?php if($row['Catatan_Dosen']): ?>
+                                    <div class="bg-light p-2 rounded border-start border-danger border-3 small">
+                                        <span class="text-danger fw-bold small">Catatan Dosen:</span><br>
+                                        <span class="text-muted fst-italic"><?= $row['Catatan_Dosen'] ?></span>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                                <?php if($row['Bukti_Foto']): ?>
+                                    <a href="uploads/bukti_bimbingan/<?= $row['Bukti_Foto'] ?>" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                        <i class="bi bi-image"></i> Lihat
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-<?= $color ?> rounded-pill px-4 py-2" style="font-size: 0.75rem;">
+                                    <?= strtoupper($row['Status']) ?>
+                                </span>
+                            </td>
+                        </tr>
+                        <?php endwhile; 
+                        else: ?>
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2 opacity-50"></i>
+                                Belum ada riwayat bimbingan.
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

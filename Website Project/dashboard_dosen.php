@@ -296,7 +296,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'home';
                                                         <i class="bi bi-person"></i> <?= $berita['penulis'] ?>
                                                     </span>
                                                 </div>
-                                                <p class="text-secondary small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                                <p class="text-secondary small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
                                                     <?= strip_tags($berita['deskripsi']) ?>
                                                 </p>
                                                 <div class="mt-auto text-end">
@@ -410,7 +410,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
     <footer class="text-center py-4 bg-dark text-white mt-auto">
         <div class="container">
-            <h6 class="fw-bold mb-2"><?= $web['nama_web'] ?> - Universitas Pembangunan Jaya</h6>
+            <h6 class="fw-bold mb-2"><?= $web['nama_web'] ?> - Universitas Perguruan Tinggi</h6>
             <small class="d-block text-white-50"><?= $web['alamat'] ?></small>
             
             <div class="social-links mt-3">

@@ -5,7 +5,7 @@ include 'koneksi.php';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 // Query Data Artikel
-$query = mysqli_query($conn, "SELECT * FROM notifikasi WHERE id = $id");
+$query = mysqli_query($conn, "SELECT * FROM notifikasi WHERE notifikasi_id = $id");
 $data = mysqli_fetch_assoc($query);
 
 // Jika data tidak ditemukan
